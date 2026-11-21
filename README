@@ -1,0 +1,7 @@
+Como Rodar
+
+* Ter instalado o Node
+* Entrar na raiz do projeto
+* npm install
+* npm run dev
+* Abrir o localhost gerado no navegador

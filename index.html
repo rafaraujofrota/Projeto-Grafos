@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grafos</title>
+    <style>
+      .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+      label { display: flex; gap: 6px; align-items: center; }
+      button { padding: 6px 12px; cursor: pointer; }
+      canvas { max-width: 100%; border: 1px solid #333; margin-top: 64px;}
+      .canvasContainer { display: flex; width: 100%; justify-content: center; }
+    </style>
+  </head>
+  <body>
+    <div class="controls">
+      <label>Salas<input id="rooms" type="range" min="15" max="50" value="15"></label>
+      <label>Ciclos<input id="loops" type="range" min="0" max="100" value="0"></label>
+      <button id="generate">Gerar</button>
+      <button id="simplify">Simplificar</button>
+      <button id="simplifyMax">SimplificarMáximo</button>
+    </div>
+    <div class="canvasContainer">
+      <canvas id="canvas" width="1200" height="800">
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
