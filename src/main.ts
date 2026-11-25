@@ -1,26 +1,32 @@
-import { generateDungeon, type DungeonConfig } from "./dungeon"
+import { generateDungeon, getRoomColorList, type DungeonConfig } from "./dungeon"
+import { updateText } from "./experiments"
 import { rectCenter, type Rect } from "./geometry"
-import type { Graph } from "./graph"
+import { Graph } from "./graph"
 
 const canvasElement = document.getElementById("canvas")
 const canvas = canvasElement as HTMLCanvasElement
 const ctx = canvas.getContext("2d")
 
-const generateButton = document.getElementById("generate")
-const simplifyButton = document.getElementById("simplify")
-const simplifyMaxButton = document.getElementById("simplifyMax")
-
-function getInputData(id: string): number {
+export function getInputData(id: string): number {
   const element = document.getElementById(id) as HTMLInputElement
   if(!element) console.log(`Input ${id} não foi criado`)
   return Number(element.value)
 }
 
-function renderGraph(dungeonGraph: Graph<Rect>) {
+export function getEl(id: string) {
+  const el = document.getElementById(id)
+  if(!el) console.log("Sem elemento com Id: " + id)
+  return el
+}
+
+export function renderGraph(graph: Graph<Rect>) {
   if(!canvas || !ctx) {
     console.log("Elemento canvas não existe")
     return
   }
+
+  dungeonGraph = graph
+
   // Fundo
   ctx.fillStyle = "#b6b6b6"
   ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -28,11 +34,11 @@ function renderGraph(dungeonGraph: Graph<Rect>) {
   // Arestas
   ctx.lineWidth = 8
   ctx.lineCap = "round"
-  for (const [a, b] of dungeonGraph.allEdges()) {
+  for (const [a, b] of graph.allEdges()) {
     ctx.strokeStyle = "#000000"
-    if(dungeonGraph.isBridge(a, b)) ctx.strokeStyle = "#ff0000"
-    const pa = rectCenter(dungeonGraph.getVertex(a).data) 
-    const pb = rectCenter(dungeonGraph.getVertex(b).data) 
+    if(graph.isBridge(a, b)) ctx.strokeStyle = "#ff0000"
+    const pa = rectCenter(graph.getVertex(a).data) 
+    const pb = rectCenter(graph.getVertex(b).data) 
     ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
   }
 
@@ -40,15 +46,16 @@ function renderGraph(dungeonGraph: Graph<Rect>) {
   ctx.textAlign = "center"
   ctx.textBaseline = "middle"
   ctx.lineWidth = 3
-  const distances = dungeonGraph.distancesFrom(0)
+  const distances = graph.distancesFrom(0)
+  const roomColorList = getRoomColorList(graph.getTwoEdgeConnectedComponents())
 
-  for (const v of dungeonGraph.allVertices()) {
+  for (const v of graph.allVertices()) {
     const { height, position, width } = v.data;
-    ctx.fillStyle = "#ffffff"
+    ctx.fillStyle = roomColorList.get(v.id)!
     ctx.fillRect(position.x, position.y, width, height)
     
     ctx.strokeStyle = "#2c2c2b"
-    if(dungeonGraph.isArticulation(v.id)) ctx.strokeStyle = "#ff0000"
+    if(graph.isArticulation(v.id)) ctx.strokeStyle = "#ff0000"
     ctx.strokeRect(position.x, position.y, width, height)
     
     ctx.fillStyle = "#2800ff"
@@ -59,9 +66,11 @@ function renderGraph(dungeonGraph: Graph<Rect>) {
     ctx.font = "12px Montserrat"
     ctx.fillText("Dist: " + String(distances.get(v.id)), cX, cY + 7)
   }
+
+  updateText(graph)
 }
 
-let dungeonGraph: Graph<Rect>
+export let dungeonGraph: Graph<Rect>
 
 function renderNewDungeon() {
   const config: DungeonConfig = {
@@ -82,40 +91,15 @@ function renderNewDungeon() {
   renderGraph(dungeonGraph)
 }
 
-function renderSimplifiedDungeon(dungeonGraph: Graph<Rect>, max: boolean) {
-  let isSimple = false
-
-  while (!isSimple) {
-    isSimple = true
-
-    for (const [a, b] of dungeonGraph.allEdges()) {
-      if (!dungeonGraph.isBridge(a, b)) {
-        isSimple = false
-        dungeonGraph.removeEdge(a, b) 
-        dungeonGraph.findWeakPoints()
-        if(!max) {
-          renderGraph(dungeonGraph)
-          return
-        }
-        else break            
-      }
-    }
-  }
-
-  renderGraph(dungeonGraph)
-}
-
 renderNewDungeon()
 
-// Botões
-if(!generateButton) console.log("Sem botão de Gerar")
-if(!simplifyButton) console.log("Sem botão de Simplificar")
-if(!simplifyMaxButton) console.log("Sem botão de SimplificarMax")
-
-generateButton?.addEventListener("click", () => renderNewDungeon())
-simplifyButton?.addEventListener("click", 
-  () => renderSimplifiedDungeon(dungeonGraph, false)
-)
-simplifyMaxButton?.addEventListener("click", 
-  () => renderSimplifiedDungeon(dungeonGraph, true)
-)
+// Botões 
+getEl("generate")?.addEventListener("click", () => renderNewDungeon())
+getEl("simplify")?.addEventListener("click", () => {
+  dungeonGraph = Graph.getSimplifiedGraph(dungeonGraph, 1)
+  renderGraph(dungeonGraph)
+})
+getEl("simplifyMax")?.addEventListener("click", () => {
+  dungeonGraph = Graph.getSimplifiedGraph(dungeonGraph, Infinity)
+  renderGraph(dungeonGraph)
+})

@@ -6,10 +6,30 @@
     <title>Grafos</title>
     <style>
       .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+
       label { display: flex; gap: 6px; align-items: center; }
       button { padding: 6px 12px; cursor: pointer; }
-      canvas { max-width: 100%; border: 1px solid #333; margin-top: 64px;}
+      canvas { max-width: 100%; border: 1px solid #333; margin: 32px 0 32px 0;}
+
       .canvasContainer { display: flex; width: 100%; justify-content: center; }
+      .currentData {  
+        padding: 8px; border: 2px solid gray; border-radius: 8px; 
+        width: fit-content; margin: auto; margin-bottom: 16px;
+      }
+      .tableTitle { 
+        background-color: lightgray; align-items: center; font-weight: bold;
+        border: 1px solid black; white-space: nowrap;
+      }
+      .table {
+        display: grid; width: 80%;
+        margin: auto; margin-top: 32px; text-align: center; justify-content: center;
+        grid-template-columns: repeat(9, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+      }
+      .table > div { 
+        border: 1px solid black; padding: 8px; 
+        display: flex; justify-content: center; align-items: center;
+      }
     </style>
   </head>
   <body>
@@ -23,6 +43,19 @@
     <div class="canvasContainer">
       <canvas id="canvas" width="1200" height="800">
     </div>
+    <div class="currentData">
+      <span id="dataText"></span>
+    </div>
+    <div class="controls" style="justify-content: center;">
+      <button id="startExperiment">Rodar Experimento</button>
+      <button id="getOriginal">Ver Original</button>
+      <button id="getMiddle">Ver Intermediaria</button>
+      <button id="getFinal">Ver Final</button>
+      <button id="getDefault">Carregar Default</button>
+      <button id="export">Exportar</button>
+      <button id="import">Importar</button>
+    </div>
+    <div class="table" id="table"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

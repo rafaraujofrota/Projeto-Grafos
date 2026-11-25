@@ -65,3 +65,22 @@ export function generateDungeon(cfg: DungeonConfig): Graph<Rect> {
 
   return graph
 }
+
+export function getRoomColorList(components: number[][]): Map<number, string> {
+  const colors = new Map<number, string>()
+  let colorIndex = 0
+
+  for (const component of components) {
+    let color = "white"
+
+    if (component.length > 1) {
+      const hue = (colorIndex * 137.5) % 360
+      color = `hsl(${hue + 40}, 70%, 85%)`
+      colorIndex++
+    }
+
+    for (const id of component) colors.set(id, color)
+  }
+
+  return colors
+}

@@ -18,6 +18,17 @@ export class Graph<T> {
     return this.vertices.size
   }
 
+  clone(): Graph<T> {
+    const copy = new Graph<T>()
+    for (const v of this.allVertices()) {
+      copy.addVertex(v.id, v.data)
+    }
+    for (const [a, b] of this.allEdges()) {
+      copy.addEdge(a, b)
+    }
+    return copy
+  }
+
   private clearWeakPoints() {
     this.articulations = null
     this.bridges = null
@@ -27,7 +38,6 @@ export class Graph<T> {
     if (this.vertices.has(id)) throw new Error(`Vertice ${id} já existe`)
     const v = new Vertex(id, data)
     this.vertices.set(id, v)
-    this.clearWeakPoints()
     return v
   }
 
@@ -147,5 +157,61 @@ export class Graph<T> {
     if(!this.articulations) throw new Error("Weakpoints desatualizado")
 
     return this.articulations.includes(id)
+  }
+
+  getTwoEdgeConnectedComponents(): number[][] {
+    if(!this.bridges) this.findWeakPoints() 
+
+    const visited = new Set<number>()
+    const componentList: number[][] = []
+
+    for (const vertex of this.allVertices()) {
+      if (visited.has(vertex.id)) continue
+
+      const component: number[] = []
+      const toVisit = [vertex.id]
+      visited.add(vertex.id)
+
+      while (toVisit.length > 0) {
+        const u = toVisit.pop()!
+        component.push(u)
+
+        for (const n of this.getVertex(u).neighbors) {
+          if (visited.has(n) || this.isBridge(u, n)) continue
+          visited.add(n)
+          toVisit.push(n)
+        }
+      }
+
+      componentList.push(component)
+    }
+
+    return componentList
+  }
+
+  getBridges() {
+    if(!this.bridges) this.findWeakPoints()
+    return this.bridges
+  }
+
+  getArticulations() {
+    if(!this.articulations) this.findWeakPoints()
+    return this.articulations
+  }
+
+  static getSimplifiedGraph(graph: Graph<any>, maxRemovals: number) {
+    const newGraph = graph.clone()
+    newGraph.findWeakPoints()
+
+    for (let i = 0; i < maxRemovals; i++) {
+      const edge = [...newGraph.allEdges()].find(([a, b]) => !newGraph.isBridge(a, b))
+
+      if (!edge) break
+
+      newGraph.removeEdge(...edge)
+      newGraph.findWeakPoints()
+    }
+
+    return newGraph
   }
 }
